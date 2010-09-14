@@ -97,7 +97,7 @@ module Factual
       @adapter = adapter
     end
 
-    def input(value, opts)
+    def input(value, opts={})
       hash = opts.merge({
         :subjectKey => @subject_key,
         :fieldId => @field_id,

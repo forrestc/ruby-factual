@@ -1,4 +1,4 @@
-== Sample Usage ==
+## Sample Usage
 >     require 'ruby-factual'
 >     
 >     api = Factual::Api.new(:api_key => '<YOUR_FACTUAL_API_KEY>', :version => 2)

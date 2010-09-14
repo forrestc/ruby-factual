@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.description = %q{}
   s.email = %q{forrest@factual.com}
   s.extra_rdoc_files = ["README.md"]
-  s.files = ["README.md", "lib/ruby-factual.rb"]
+  s.files = ["README.md", "lib/factual.rb"]
   s.homepage = %q{http://github.com/forrestc/ruby-factual}
   s.rdoc_options = ["--line-numbers", "--inline-source", "--title", "ruby-factual", "--main", "README.md"]
   s.require_paths = ["lib"]

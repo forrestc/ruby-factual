@@ -23,7 +23,8 @@ module Factual
       @schema = adapter.schema(@table_key)
 
      [:name, :description, :rating, :source, :creator, :total_row_count, :created_at, :updated_at, :fields].each do |attr|
-       self.send("#{attr}=", @schema[attr.to_s]) 
+       key = camelize(attr)
+       self.send("#{attr}=", @schema[key]) 
      end
 
      @fields.each do |f|
@@ -43,6 +44,13 @@ module Factual
       rows.collect do |row_data|
         Row.new(@adapter, @table_key, @fields, row_data)
       end
+    end
+
+    private
+
+    def camelize(str)
+      s = str.to_s.split("_").collect{ |w| w.capitalize }.join
+      s[0].chr.downcase + s[1..-1]
     end
   end
 

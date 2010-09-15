@@ -16,13 +16,13 @@ module Factual
   end
 
   class Table
-    attr_accessor :name, :description, :rating, :source, :creator, :total_row_count, :created_at, :updated_at, :fields
+    attr_accessor :name, :description, :rating, :source, :creator, :total_row_count, :created_at, :updated_at, :fields, :geo_enabled, :downloadable
     def initialize(table_key, adapter)
       @table_key = table_key
       @adapter = adapter
       @schema = adapter.schema(@table_key)
 
-     [:name, :description, :rating, :source, :creator, :total_row_count, :created_at, :updated_at, :fields].each do |attr|
+     [:name, :description, :rating, :source, :creator, :total_row_count, :created_at, :updated_at, :fields, :geo_enabled, :downloadable].each do |attr|
        key = camelize(attr)
        self.send("#{attr}=", @schema[key]) 
      end
@@ -72,7 +72,7 @@ module Factual
       @facts_hash  = {}
       @fields.each_with_index do |f, idx|
         next if f["isPrimary"]
-        @facts_hash[f["field_ref"]] = Fact.new(@adapter, @table_key, @subject_key, f['id'], row_data[idx+1])
+        @facts_hash[f["field_ref"]] = Fact.new(@adapter, @table_key, @subject_key, f, row_data[idx+1])
       end
     end
 
@@ -87,20 +87,26 @@ module Factual
   end
 
   class Fact
-    attr_accessor :value, :subject_key, :field_id, :adapter
+    attr_accessor :value, :subject_key, :field, :adapter
 
-    def initialize(adapter, table_key, subject_key, field_id, value)
+    def initialize(adapter, table_key, subject_key, field, value)
       @value = value 
       @subject_key = subject_key
       @table_key = table_key
-      @field_id = field_id
+      @field = field
       @adapter = adapter
     end
 
+    def field_ref
+      @field["field_ref"]
+    end
+
     def input(value, opts={})
+      return false if value.nil?
+
       hash = opts.merge({
         :subjectKey => @subject_key,
-        :fieldId => @field_id,
+        :fieldId => @field['id'],
         :value => value
       })
       query_string = hash.to_a.collect{ |k,v| URI.escape(k.to_s) + '=' + URI.escape(v.to_s) }.join('&')
@@ -128,10 +134,15 @@ module Factual
 
     def api_call(url)
       api_url = @base + url
-      curl = Curl::Easy.new(api_url) do |c|
-        c.connect_timeout = CONNECT_TIMEOUT
+
+      begin
+        curl = Curl::Easy.new(api_url) do |c|
+          c.connect_timeout = CONNECT_TIMEOUT
+        end
+        curl.http_get
+      rescue Exception => e
+        raise ApiError.new(e.to_s + " when getting " + api_url)
       end
-      curl.http_get
 
       resp = JSON.parse(curl.body_str)
       raise ApiError.new(resp["error"]) if resp["status"] == "error"

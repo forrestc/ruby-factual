@@ -7,7 +7,8 @@ module Factual
     def initialize(opts)
       @api_key = opts[:api_key]
       @version = opts[:version]
-      @adapter = Adapter.new(@api_key, @version)
+      @domain  = opts[:domain] || 'www.factual.com'
+      @adapter = Adapter.new(@api_key, @version, @domain)
     end
 
     def get_table(table_key)
@@ -33,20 +34,43 @@ module Factual
      end
     end
 
-    def read(filters=nil)
-      filters_query = "filters=" + filters.to_json if filters
-      resp = @adapter.api_call("/tables/#{@table_key}/read.jsaml?limit=999&" + filters_query.to_s)
+    def filter(filters)
+      @filters = filters
+      return self
+    end
+
+    def sort(sorts)
+      @sorts = sorts
+      return self
+    end
+
+    def each_row
+      filters_query = "&filters=" + @filters.to_json if @filters
+      if @sorts
+        sorts_by = "sort_by=" + @sorts.keys.collect{|k| get_field_id(k).to_s}.join(",") 
+        sorts_dir = "sort_dir=" + @sorts.values.collect{|v| (v==1) ? 'asc' : 'desc' }.join(",")
+        sorts_query = "&" + sorts_by + "&" + sorts_dir
+      end
+
+      resp = @adapter.api_call("/tables/#{@table_key}/read.jsaml?limit=999" + filters_query.to_s + sorts_query.to_s)
 
       @total_rows = resp["response"]["total_rows"]
       rows = resp["response"]["data"]
 
       # TODO iterator
-      rows.collect do |row_data|
-        Row.new(@adapter, @table_key, @fields, row_data)
+      rows.each do |row_data|
+        row = Row.new(@adapter, @table_key, @fields, row_data) 
+        yield(row) if block_given?
       end
     end
 
     private
+
+    def get_field_id(field_ref)
+      @fields.each do |f|
+        return f['id'] if f['field_ref'] == field_ref.to_s
+      end
+    end
 
     def camelize(str)
       s = str.to_s.split("_").collect{ |w| w.capitalize }.join
@@ -128,8 +152,8 @@ module Factual
   class Adapter
     CONNECT_TIMEOUT = 30
 
-    def initialize(api_key, version)
-      @base = "http://api.factual.com/v#{version}/#{api_key}"
+    def initialize(api_key, version, domain)
+      @base = "http://#{domain}/api/v#{version}/#{api_key}"
     end
 
     def api_call(url)

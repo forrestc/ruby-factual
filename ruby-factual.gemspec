@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{ruby-factual}
-  s.version = "0.0.3"
+  s.version = "0.0.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 1.2") if s.respond_to? :required_rubygems_version=
   s.authors = ["Forrest Cao"]
@@ -15,6 +15,8 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--line-numbers", "--inline-source", "--title", "ruby-factual", "--main", "README.md"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.7}
+  s.add_dependency('curb', '>=0.3.4')
+  s.add_dependency('json', '>=1.2.0')
   s.summary = %q{}
 
   if s.respond_to? :specification_version then

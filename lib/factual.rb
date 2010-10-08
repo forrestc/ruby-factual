@@ -18,14 +18,17 @@ module Factual
 
   class Table
     attr_accessor :name, :description, :rating, :source, :creator, :total_row_count, :created_at, :updated_at, :fields, :geo_enabled, :downloadable
+    attr_accessor :key, :adapter
+
     def initialize(table_key, adapter)
       @table_key = table_key
-      @adapter = adapter
-      @schema = adapter.schema(@table_key)
+      @adapter   = adapter
+      @schema    = adapter.schema(@table_key)
+      @key       = table_key
 
      [:name, :description, :rating, :source, :creator, :total_row_count, :created_at, :updated_at, :fields, :geo_enabled, :downloadable].each do |attr|
-       key = camelize(attr)
-       self.send("#{attr}=", @schema[key]) 
+       k = camelize(attr)
+       self.send("#{attr}=", @schema[k]) 
      end
 
      @fields.each do |f|
@@ -59,7 +62,7 @@ module Factual
 
       # TODO iterator
       rows.each do |row_data|
-        row = Row.new(@adapter, @table_key, @fields, row_data) 
+        row = Row.new(self, row_data) 
         yield(row) if block_given?
       end
     end
@@ -81,11 +84,11 @@ module Factual
   class Row
     attr_accessor :subject_key, :subject
 
-    def initialize(adapter, table_key, fields, row_data)
+    def initialize(table, row_data)
       @subject_key = row_data[0]
-      @fields      = fields
-      @table_key   = table_key
-      @adapter     = adapter
+      @fields      = table.fields
+      @table_key   = table.key
+      @adapter     = table.adapter
 
       @subject     = []
       @fields.each_with_index do |f, idx|

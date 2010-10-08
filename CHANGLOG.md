@@ -1,3 +1,8 @@
+## Version 0.0.4
+* added gem dependencies
+* code refactoring
+* doc correction, put in more comments
+
 ## Version 0.0.3
 * table.filter(filters_hash).sort(sorts_hash).each_row
 * configurable domain for testing

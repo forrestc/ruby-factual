@@ -86,9 +86,11 @@ module Factual
 
     def initialize(table, row_data)
       @subject_key = row_data[0]
-      @fields      = table.fields
-      @table_key   = table.key
-      @adapter     = table.adapter
+
+      @table       = table
+      @fields      = @table.fields
+      @table_key   = @table.key
+      @adapter     = @table.adapter
 
       @subject     = []
       @fields.each_with_index do |f, idx|
@@ -99,7 +101,7 @@ module Factual
       @facts_hash  = {}
       @fields.each_with_index do |f, idx|
         next if f["isPrimary"]
-        @facts_hash[f["field_ref"]] = Fact.new(@adapter, @table_key, @subject_key, f, row_data[idx+1])
+        @facts_hash[f["field_ref"]] = Fact.new(@table, @subject_key, f, row_data[idx+1])
       end
     end
 
@@ -116,12 +118,13 @@ module Factual
   class Fact
     attr_accessor :value, :subject_key, :field, :adapter
 
-    def initialize(adapter, table_key, subject_key, field, value)
+    def initialize(table, subject_key, field, value)
       @value = value 
-      @subject_key = subject_key
-      @table_key = table_key
       @field = field
-      @adapter = adapter
+      @subject_key = subject_key
+
+      @table_key = table.key
+      @adapter   = table.adapter
     end
 
     def field_ref

@@ -1,3 +1,6 @@
+## Version 0.0.5
+* checked in missing refactoring code
+
 ## Version 0.0.4
 * added gem dependencies
 * code refactoring

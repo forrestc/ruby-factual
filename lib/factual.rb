@@ -57,10 +57,10 @@ module Factual
         sorts_query = "&" + sorts_by + "&" + sorts_dir
       end
 
-      resp = @adapter.api_call("/tables/#{@table_key}/read.jsaml?limit=999" + filters_query.to_s + sorts_query.to_s)
+      resp = @adapter.read_table(@table_key, filters_query, sorts_query)
 
-      @total_rows = resp["response"]["total_rows"]
-      rows = resp["response"]["data"]
+      @total_rows = resp["total_rows"]
+      rows = resp["data"]
 
       # TODO iterator
       rows.each do |row_data|
@@ -141,9 +141,8 @@ module Factual
         :fieldId => @field['id'],
         :value => value
       })
-      query_string = hash.to_a.collect{ |k,v| URI.escape(k.to_s) + '=' + URI.escape(v.to_s) }.join('&')
 
-      @adapter.api_call("/tables/#{@table_key}/input.js?" + query_string)
+      @adapter.input(@table_key, hash)
       return true
     end
 
@@ -168,7 +167,7 @@ module Factual
 
     def api_call(url)
       api_url = @base + url
-      puts "http://#{@domain}/#{api_url}" if @debug
+      puts "[Factual API Call] http://#{@domain}/#{api_url}" if @debug
 
       json = "{}"
       begin
@@ -188,6 +187,17 @@ module Factual
     def schema(table_key)
       resp = api_call("/tables/#{table_key}/schema.json")
       return resp["schema"]
+    end
+
+    def read_table(table_key, filters_query="", sorts_query="", limit=999)
+      resp = api_call("/tables/#{table_key}/read.jsaml?limit=#{limit}" + filters_query.to_s + sorts_query.to_s)
+      return resp["response"]
+    end
+
+    def input(table_key, params)
+      query_string = params.to_a.collect{ |k,v| URI.escape(k.to_s) + '=' + URI.escape(v.to_s) }.join('&')
+      resp = api_call("/tables/#{table_key}/input.js?" + query_string)
+      return resp['response']
     end
   end
 

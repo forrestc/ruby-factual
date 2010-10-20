@@ -2,6 +2,9 @@
 * replaced curl dependency with net/http to be more universal (jruby)
 * added debug mode
 * adapter refactoring
+* added Table#find_one
+* added support for secondary sort
+* added tests
 
 ## Version 0.0.5
 * checked in missing refactoring code

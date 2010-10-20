@@ -6,7 +6,7 @@ module Factual
   class Api
     def initialize(opts)
       @api_key = opts[:api_key]
-      @version = opts[:version]
+      @version = opts[:version] || 2
       @domain  = opts[:domain] || 'www.factual.com'
       @debug   = opts[:debug]
 
@@ -44,25 +44,34 @@ module Factual
       return self
     end
 
-    def sort(sorts)
+    # Define sort before find_one or each_row
+    # the params can be:
+    #  * a hash with one key, table.sort(:state => 1).find_one
+    #  * an array of one-key hash, table.sort({:state => 1}, {:abbr => -1}).find_one, only the secondary sort will be take effect. (it will be supported in next release)
+    #
+    # For more detail inforamtion, please look up at http://wiki.developer.factual.com/Sort
+    def sort(*sorts)
       @sorts = sorts
       return self
     end
 
-    def each_row
-      filters_query = "&filters=" + @filters.to_json if @filters
-      if @sorts
-        sorts_by = "sort_by=" + @sorts.keys.collect{|k| get_field_id(k).to_s}.join(",") 
-        sorts_dir = "sort_dir=" + @sorts.values.collect{|v| (v==1) ? 'asc' : 'desc' }.join(",")
-        sorts_query = "&" + sorts_by + "&" + sorts_dir
-      end
+    def find_one
+      resp = @adapter.read_table(@table_key, @filters, @sorts, 1)
+      row_data = resp["data"].first
 
-      resp = @adapter.read_table(@table_key, filters_query, sorts_query)
+      if row_data
+        return Row.new(self, row_data)
+      else
+        return nil
+      end
+    end
+
+    def each_row
+      resp = @adapter.read_table(@table_key, @filters, @sorts)
 
       @total_rows = resp["total_rows"]
       rows = resp["data"]
 
-      # TODO iterator
       rows.each do |row_data|
         row = Row.new(self, row_data) 
         yield(row) if block_given?
@@ -138,8 +147,8 @@ module Factual
 
       hash = opts.merge({
         :subjectKey => @subject_key,
-        :fieldId => @field['id'],
-        :value => value
+        :fieldId    => @field['id'],
+        :value      => value
       })
 
       @adapter.input(@table_key, hash)
@@ -167,7 +176,7 @@ module Factual
 
     def api_call(url)
       api_url = @base + url
-      puts "[Factual API Call] http://#{@domain}/#{api_url}" if @debug
+      puts "[Factual API Call] http://#{@domain}#{api_url}" if @debug
 
       json = "{}"
       begin
@@ -185,18 +194,32 @@ module Factual
     end
 
     def schema(table_key)
-      resp = api_call("/tables/#{table_key}/schema.json")
+      url  = "/tables/#{table_key}/schema.json"
+      resp = api_call(url)
+
       return resp["schema"]
     end
 
-    def read_table(table_key, filters_query="", sorts_query="", limit=999)
-      resp = api_call("/tables/#{table_key}/read.jsaml?limit=#{limit}" + filters_query.to_s + sorts_query.to_s)
+    def read_table(table_key, filters=nil, sorts=nil, limit=999)
+      filters_query = "&filters=" + filters.to_json if filters
+
+      if sorts
+        sorts = sorts[0] if sorts.length == 1
+        sorts_query = "&sort=" + sorts.to_json
+      end
+
+      url  = "/tables/#{table_key}/read.jsaml?limit=#{limit}" + filters_query.to_s + sorts_query.to_s
+      resp = api_call(url)
+
       return resp["response"]
     end
 
     def input(table_key, params)
       query_string = params.to_a.collect{ |k,v| URI.escape(k.to_s) + '=' + URI.escape(v.to_s) }.join('&')
-      resp = api_call("/tables/#{table_key}/input.js?" + query_string)
+
+      url  = "/tables/#{table_key}/input.js?" + query_string
+      resp = api_call(url)
+
       return resp['response']
     end
   end

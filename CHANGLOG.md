@@ -1,3 +1,7 @@
+## Version 0.0.6
+* replaced curl dependency with net/http to be more universal (jruby)
+* added debug mode
+
 ## Version 0.0.5
 * checked in missing refactoring code
 

@@ -1,4 +1,4 @@
-require 'curl'
+require 'net/http'
 require 'json'
 require 'uri'
 
@@ -8,7 +8,9 @@ module Factual
       @api_key = opts[:api_key]
       @version = opts[:version]
       @domain  = opts[:domain] || 'www.factual.com'
-      @adapter = Adapter.new(@api_key, @version, @domain)
+      @debug   = opts[:debug]
+
+      @adapter = Adapter.new(@api_key, @version, @domain, @debug)
     end
 
     def get_table(table_key)
@@ -158,23 +160,27 @@ module Factual
   class Adapter
     CONNECT_TIMEOUT = 30
 
-    def initialize(api_key, version, domain)
-      @base = "http://#{domain}/api/v#{version}/#{api_key}"
+    def initialize(api_key, version, domain, debug=false)
+      @domain = domain
+      @base   = "/api/v#{version}/#{api_key}"
+      @debug  = debug
     end
 
     def api_call(url)
       api_url = @base + url
+      puts "http://#{@domain}/#{api_url}" if @debug
 
+      json = "{}"
       begin
-        curl = Curl::Easy.new(api_url) do |c|
-          c.connect_timeout = CONNECT_TIMEOUT
+        Net::HTTP.start(@domain, 80) do |http|
+          response = http.get(api_url)
+          json     = response.body
         end
-        curl.http_get
       rescue Exception => e
         raise ApiError.new(e.to_s + " when getting " + api_url)
       end
 
-      resp = JSON.parse(curl.body_str)
+      resp = JSON.parse(json)
       raise ApiError.new(resp["error"]) if resp["status"] == "error"
       return resp
     end

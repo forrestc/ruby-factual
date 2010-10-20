@@ -15,7 +15,6 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--line-numbers", "--inline-source", "--title", "ruby-factual", "--main", "README.md"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.7}
-  s.add_dependency('curb', '>=0.3.4')
   s.add_dependency('json', '>=1.2.0')
   s.summary = %q{}
 

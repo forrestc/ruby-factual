@@ -1,9 +1,30 @@
+# A Ruby Lib for using Facutal API 
+#
+# For more information, visit http://github.com/factual/ruby-lib (TODO), 
+# and {Factual Developer Tools}[http://www.factual.com/devtools]
+#
+# Author:: Forrest Cao (mailto:forrest@factual.com)
+# Copyright:: Copyright (c) 2010 {Factual Inc}[http://www.factual.com].
+# License:: GPL
+
 require 'net/http'
 require 'json'
 require 'uri'
 
 module Factual
+  # The start point of using Factual API
   class Api
+
+    # To initialize a Factual::Api, you will have to get an api_key from {Factual Developer Tools}[http://www.factual.com/developers/api_key]
+    #
+    # Params: opts as a hash
+    # * <tt>opts[:api_key]</tt> required
+    # * <tt>opts[:debug]</tt>   optional, default is false. If you set it as true, it will print the Factual Api Call URLs on the screen
+    # * <tt>opts[:version]</tt> optional, default value is 2, just do not change it
+    # * <tt>opts[:domain]</tt>  optional, default value is www.factual.com (only configurable by Factual employees) 
+    # 
+    # Sample: 
+    #   api = Factual::Api.new(:api_key => MY_API_KEY, :debug => true)
     def initialize(opts)
       @api_key = opts[:api_key]
       @version = opts[:version] || 2
@@ -13,16 +34,22 @@ module Factual
       @adapter = Adapter.new(@api_key, @version, @domain, @debug)
     end
 
+    # Get a Factual::Table object by inputting the table_key
+    #
+    # Sample: 
+    #   api.get_table('g9R1u2')
     def get_table(table_key)
       Table.new(table_key, @adapter)
     end
   end
 
+  # This class holds the metadata of a Factual table. The filter and sort methods are to filter and/or sort
+  # the table data before calling a find_one or each_row.
   class Table
-    attr_accessor :name, :description, :rating, :source, :creator, :total_row_count, :created_at, :updated_at, :fields, :geo_enabled, :downloadable
-    attr_accessor :key, :adapter
+    attr_accessor :name, :key, :description, :rating, :source, :creator, :total_row_count, :created_at, :updated_at, :fields, :geo_enabled, :downloadable
+    attr_reader   :adapter # :nodoc:
 
-    def initialize(table_key, adapter)
+    def initialize(table_key, adapter) # :nodoc:
       @table_key = table_key
       @adapter   = adapter
       @schema    = adapter.schema(@table_key)
@@ -39,22 +66,44 @@ module Factual
      end
     end
 
+    # Define table filters, it can be chained before +find_one+ or +each_row+.
+    # 
+    # The params can be:
+    # * simple hash for equal filter
+    # * nested hash with filter operators
+    #
+    # Samples:
+    #   table.filter(:state => 'CA').find_one # hash
+    #   table.filter(:state => 'CA', :city => 'LA').find_one # multi-key hash
+    #   table.filter(:state => {"$has" => 'A'}).find_one  # nested hash
+    #   table.filter(:state => {"$has" => 'A'}, :city => {"$ew" => 'A'}).find_one # multi-key nested hashes
+    #   
+    # For more detail inforamtion about filter syntax, please look up at {Server API Doc for Filter}[http://wiki.developer.factual.com/Filter]
     def filter(filters)
       @filters = filters
       return self
     end
 
-    # Define sort before find_one or each_row
-    # the params can be:
-    #  * a hash with one key, table.sort(:state => 1).find_one
-    #  * an array of one-key hash, table.sort({:state => 1}, {:abbr => -1}).find_one, only the secondary sort will be take effect. (it will be supported in next release)
+    # Define table sorts, it can be chained before +find_one+ or +each_row+.
+    # 
+    # The params can be:
+    # * a hash with single key
+    # * single-key hashes, only the first 2 sorts will work. (secondary sort will be supported in next release of Factual API)
     #
-    # For more detail inforamtion, please look up at http://wiki.developer.factual.com/Sort
+    # Samples:
+    #   table.sort(:state => 1).find_one  # hash with single key
+    #   table.sort({:state => 1}, {:abbr => -1}).find_one # single-key hashes
+    # For more detail inforamtion about sort syntax, please look up at {Server API Doc for Sort (TODO)}[http://wiki.developer.factual.com/Sort]
     def sort(*sorts)
       @sorts = sorts
       return self
     end
 
+    # Find the first row (a Factual::Row object) of the table with filters and/or sorts.
+    #
+    # Samples:
+    # * <tt>table.filter(:state => 'CA').find_one</tt>
+    # * <tt>table.filter(:state => 'CA').sort(:city => 1).find_one</tt>
     def find_one
       resp = @adapter.read_table(@table_key, @filters, @sorts, 1)
       row_data = resp["data"].first
@@ -66,6 +115,12 @@ module Factual
       end
     end
 
+    # An iterator on each row (a Factual::Row object) of the filtered and/or sorted table data
+    #
+    # Samples:
+    #   table.filter(:state => 'CA').sort(:city => 1).each do |row|
+    #     puts row.inspect
+    #   end
     def each_row
       resp = @adapter.read_table(@table_key, @filters, @sorts)
 
@@ -78,13 +133,11 @@ module Factual
       end
     end
 
-    private
-
-    def get_field_id(field_ref)
-      @fields.each do |f|
-        return f['id'] if f['field_ref'] == field_ref.to_s
-      end
+    # TODO
+    def add_row(values)
     end
+
+    private
 
     def camelize(str)
       s = str.to_s.split("_").collect{ |w| w.capitalize }.join
@@ -92,10 +145,13 @@ module Factual
     end
   end
 
+  # This class holds the subject_key, subject (in array) and facts (Factual::Fact objects) of a Factual Subject. 
+  #
+  # The subject_key and subject array can be accessable directly from attributes, and you can get a fact by <tt>row[field_ref]</tt>.
   class Row
-    attr_accessor :subject_key, :subject
+    attr_reader :subject_key, :subject
 
-    def initialize(table, row_data)
+    def initialize(table, row_data) # :nodoc:
       @subject_key = row_data[0]
 
       @table       = table
@@ -116,6 +172,11 @@ module Factual
       end
     end
 
+    # Get a Factual::Fact object by field_ref
+    #
+    # Sample: 
+    #   city_info = table.filter(:state => 'CA').find_one
+    #   city_info['city_name']
     def [](field_ref)
       @facts_hash[field_ref]
     end
@@ -126,10 +187,11 @@ module Factual
     end
   end
 
+  # This class holds the subject_key, value, field_ref field (field metadata in hash). The input method is for suggesting a new value for the fact.  
   class Fact
-    attr_accessor :value, :subject_key, :field, :adapter
+    attr_reader :value, :subject_key, :field_ref, :field 
 
-    def initialize(table, subject_key, field, value)
+    def initialize(table, subject_key, field, value) # :nodoc:
       @value = value 
       @field = field
       @subject_key = subject_key
@@ -138,10 +200,19 @@ module Factual
       @adapter   = table.adapter
     end
 
-    def field_ref
+    def field_ref # :nodoc:
       @field["field_ref"]
     end
 
+    # To input a new value to the fact
+    #
+    # Parameters:
+    #  * +value+ 
+    #  * <tt>opts[:source]</tt> the source of an input, can be a URL or something else
+    #  * <tt>opts[:comment]</tt> the comment of an input
+    #
+    # Sample:
+    #   fact.input('new value', :source => 'http://website.com', :comment => 'because it is new value.'
     def input(value, opts={})
       return false if value.nil?
 
@@ -155,17 +226,19 @@ module Factual
       return true
     end
 
+    # Just return the value
     def to_s
       @value
     end
 
+    # Just return the value
     def inspect
       @value
     end
   end
 
 
-  class Adapter
+  class Adapter # :nodoc:
     CONNECT_TIMEOUT = 30
 
     def initialize(api_key, version, domain, debug=false)
@@ -224,6 +297,7 @@ module Factual
     end
   end
 
+  # Exception class for Factual Api Errors  
   class ApiError < Exception
   end
 end

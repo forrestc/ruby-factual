@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>input (Factual::Adapter)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/factual.rb, line 269</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">input</span>(<span class="ruby-identifier">table_key</span>, <span class="ruby-identifier">params</span>)
+      <span class="ruby-identifier">query_string</span> = <span class="ruby-identifier">params</span>.<span class="ruby-identifier">to_a</span>.<span class="ruby-identifier">collect</span>{ <span class="ruby-operator">|</span><span class="ruby-identifier">k</span>,<span class="ruby-identifier">v</span><span class="ruby-operator">|</span> <span class="ruby-constant">URI</span>.<span class="ruby-identifier">escape</span>(<span class="ruby-identifier">k</span>.<span class="ruby-identifier">to_s</span>) <span class="ruby-operator">+</span> <span class="ruby-value str">'='</span> <span class="ruby-operator">+</span> <span class="ruby-constant">URI</span>.<span class="ruby-identifier">escape</span>(<span class="ruby-identifier">v</span>.<span class="ruby-identifier">to_s</span>) }.<span class="ruby-identifier">join</span>(<span class="ruby-value str">'&amp;'</span>)
+
+      <span class="ruby-identifier">url</span>  = <span class="ruby-node">&quot;/tables/#{table_key}/input.js?&quot;</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">query_string</span>
+      <span class="ruby-identifier">resp</span> = <span class="ruby-identifier">api_call</span>(<span class="ruby-identifier">url</span>)
+
+      <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">resp</span>[<span class="ruby-value str">'response'</span>]
+    <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

@@ -5,6 +5,7 @@
 * added Table#find_one
 * added support for secondary sort
 * added tests
+* added doc
 
 ## Version 0.0.5
 * checked in missing refactoring code

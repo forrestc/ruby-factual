@@ -1,7 +1,7 @@
 require 'test/unit/helper'
 require 'lib/factual'
 
-class AdapterTest < Factual::TestCase
+class AdapterTest < Factual::TestCase # :nodoc:
   def setup
     @adapter = Factual::Adapter.new(API_KEY, API_VERSION, API_DOMAIN, DEBUG_MODE)
   end

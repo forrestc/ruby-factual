@@ -1,7 +1,7 @@
 require 'lib/factual'
 require 'test/unit/helper'
 
-class TableTest < Factual::TestCase
+class TableTest < Factual::TestCase # :nodoc:
   def setup
     api = Factual::Api.new(:api_key => API_KEY, :debug => DEBUG_MODE)
 
@@ -35,11 +35,32 @@ class TableTest < Factual::TestCase
     row = @table.sort(:state => 1).find_one
     assert_equal row["state"].value, "California"
 
-    assert_raise Factual::ApiError do 
-      # secondary sort will be supported in next release
-      row = @table.sort({:state => 1}, {:test_field1 => 1}).find_one
-      row["state"].value
+    # secondary sort
+    row = @table.sort({:test_field1 => 1}, {:state => -1}).find_one
+    assert_equal row["state"].value, "Washington"
+  end
+
+  def test_each_row
+    states = []
+    @table.each_row do |row|
+      states << row['state'].value
     end
+
+    assert_equal states.length, @table.total_row_count
+  end
+
+  def test_paging
+    states = []
+    @table.page(2, :size => 2).each_row do |row|
+      states << row['state'].value
+    end
+
+    assert_equal states.length, 2
+    assert_not_equal states[0], "California"
+  end
+
+  def test_adding_row
+    row = @table.add_row('NE', :state => 'Nebraska')
   end
 
   def test_row

@@ -47,6 +47,7 @@ module Factual
   # the table data before calling a find_one or each_row.
   class Table
     attr_accessor :name, :key, :description, :rating, :source, :creator, :total_row_count, :created_at, :updated_at, :fields, :geo_enabled, :downloadable
+    attr_accessor :page_size, :page
     attr_reader   :adapter # :nodoc:
 
     def initialize(table_key, adapter) # :nodoc:
@@ -54,6 +55,8 @@ module Factual
       @adapter   = adapter
       @schema    = adapter.schema(@table_key)
       @key       = table_key
+      @page_size = Adapter::DEFAULT_LIMIT
+      @page      = 1
 
      [:name, :description, :rating, :source, :creator, :total_row_count, :created_at, :updated_at, :fields, :geo_enabled, :downloadable].each do |attr|
        k = camelize(attr)
@@ -64,6 +67,23 @@ module Factual
        fid = f['id']
        f['field_ref'] = @schema["fieldRefs"][fid.to_s]
      end
+    end
+
+    # Define the paging, it can be chained before +find_one+ or +each_row+, +each_row+ makes more sense though.
+    # The default page size is 20. And there is a {API limitation policy}[http://wiki.developer.factual.com/ApiLimit] need to be followed.
+    #
+    # The params are:
+    # * page_num: the page number
+    # * page_size_hash (optional): { :size => <page_size> }
+    #
+    # Samples:
+    #   table.page(2).each_row { |row| ... } # for each row of the 2nd page
+    #   table.page(2, :size => 10).each_row { |row| ... } # for each row of the 2nd page, when page size is 10
+    def page(page_num, page_size_hash=nil)
+      @page_size = page_size_hash[:size] || @page_size if page_size_hash
+      @page = page_num.to_i if page_num.to_i > 0
+
+      return self
     end
 
     # Define table filters, it can be chained before +find_one+ or +each_row+.
@@ -122,7 +142,7 @@ module Factual
     #     puts row.inspect
     #   end
     def each_row
-      resp = @adapter.read_table(@table_key, @filters, @sorts)
+      resp = @adapter.read_table(@table_key, @filters, @sorts, @page_size, @page)
 
       @total_rows = resp["total_rows"]
       rows = resp["data"]
@@ -133,8 +153,18 @@ module Factual
       end
     end
 
-    # TODO
-    def add_row(values)
+    # Samples:
+    #   api.get_table('g9R1u2').add_row('NE') # add row with single subject
+    #   api.get_table('g9R1u2').add_row('NE', :state => 'Nebraska') # add single subject with fact values
+    #   api.get_table('EZ21ij').add_row(:last_name => 'Newguy') # if the table use UUID as their subject, the subject fields are not required
+    #
+    # Returns:
+    #   a Factual::Row object
+    def add_row(*params)
+      fact_values = params.last.is_a?(Hash) ? params.pop : {}
+      subject_values = params
+      puts subject_values.inspect
+      puts fact_values.inspect
     end
 
     private
@@ -240,6 +270,7 @@ module Factual
 
   class Adapter # :nodoc:
     CONNECT_TIMEOUT = 30
+    DEFAULT_LIMIT   = 20
 
     def initialize(api_key, version, domain, debug=false)
       @domain = domain
@@ -273,7 +304,13 @@ module Factual
       return resp["schema"]
     end
 
-    def read_table(table_key, filters=nil, sorts=nil, limit=999)
+    def read_table(table_key, filters=nil, sorts=nil, page_size=nil, page=nil)
+      limit = page_size.to_i 
+      limit = DEFAULT_LIMIT unless limit > 0
+      offset = (page.to_i - 1) * limit
+      offset = 0 unless offset > 0
+
+      # TODO clean it
       filters_query = "&filters=" + filters.to_json if filters
 
       if sorts
@@ -281,7 +318,7 @@ module Factual
         sorts_query = "&sort=" + sorts.to_json
       end
 
-      url  = "/tables/#{table_key}/read.jsaml?limit=#{limit}" + filters_query.to_s + sorts_query.to_s
+      url  = "/tables/#{table_key}/read.jsaml?limit=#{limit}&offset=#{offset}" + filters_query.to_s + sorts_query.to_s
       resp = api_call(url)
 
       return resp["response"]

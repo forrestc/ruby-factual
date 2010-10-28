@@ -5,21 +5,15 @@
 
 <html>
 <head>
-  <title>find_one (Factual::Table)</title>
+  <title>sort (Factual::Table)</title>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
   <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/factual.rb, line 107</span>
-    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">find_one</span>
-      <span class="ruby-identifier">resp</span> = <span class="ruby-ivar">@adapter</span>.<span class="ruby-identifier">read_table</span>(<span class="ruby-ivar">@table_key</span>, <span class="ruby-ivar">@filters</span>, <span class="ruby-ivar">@sorts</span>, <span class="ruby-value">1</span>)
-      <span class="ruby-identifier">row_data</span> = <span class="ruby-identifier">resp</span>[<span class="ruby-value str">&quot;data&quot;</span>].<span class="ruby-identifier">first</span>
-
-      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">row_data</span>
-        <span class="ruby-keyword kw">return</span> <span class="ruby-constant">Row</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword kw">self</span>, <span class="ruby-identifier">row_data</span>)
-      <span class="ruby-keyword kw">else</span>
-        <span class="ruby-keyword kw">return</span> <span class="ruby-keyword kw">nil</span>
-      <span class="ruby-keyword kw">end</span>
+  <pre><span class="ruby-comment cmt"># File lib/factual.rb, line 117</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">sort</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">sorts</span>)
+      <span class="ruby-ivar">@sorts</span> = <span class="ruby-identifier">sorts</span>
+      <span class="ruby-keyword kw">return</span> <span class="ruby-keyword kw">self</span>
     <span class="ruby-keyword kw">end</span></pre>
 </body>
 </html>

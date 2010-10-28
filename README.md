@@ -15,7 +15,7 @@ A block of code is worth a thousand words.
 >     puts table.name, table.creator
 >     
 >     # read rows after filtering and sorting
->     table.filter(:two_letter_abbrev => "CA").sort(:state => -1).each_row do |state_info|
+>     table.filter(:two_letter_abbrev => "CA").sort(:state => -1).page(1, :size => 5).each_row do |state_info|
 >
 >       # read facts
 >       # fact attributes: value, subject_key, field_ref, field (hash)

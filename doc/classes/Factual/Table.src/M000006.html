@@ -10,8 +10,12 @@
   <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/factual.rb, line 118</span>
-    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">add_row</span>(<span class="ruby-identifier">values</span>)
+  <pre><span class="ruby-comment cmt"># File lib/factual.rb, line 163</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">add_row</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">params</span>)
+      <span class="ruby-identifier">fact_values</span> = <span class="ruby-identifier">params</span>.<span class="ruby-identifier">last</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Hash</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">params</span>.<span class="ruby-identifier">pop</span> <span class="ruby-operator">:</span> {}
+      <span class="ruby-identifier">subject_values</span> = <span class="ruby-identifier">params</span>
+      <span class="ruby-identifier">puts</span> <span class="ruby-identifier">subject_values</span>.<span class="ruby-identifier">inspect</span>
+      <span class="ruby-identifier">puts</span> <span class="ruby-identifier">fact_values</span>.<span class="ruby-identifier">inspect</span>
     <span class="ruby-keyword kw">end</span></pre>
 </body>
 </html>

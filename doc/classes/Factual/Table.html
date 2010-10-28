@@ -81,12 +81,12 @@
     <div id="description">
       <p>
 This class holds the metadata of a <a href="../Factual.html">Factual</a>
-table. The <a href="Table.html#M000001">filter</a> and <a
-href="Table.html#M000002">sort</a> methods are to <a
-href="Table.html#M000001">filter</a> and/or <a
-href="Table.html#M000002">sort</a> the table data before calling a <a
-href="Table.html#M000003">find_one</a> or <a
-href="Table.html#M000004">each_row</a>.
+table. The <a href="Table.html#M000002">filter</a> and <a
+href="Table.html#M000003">sort</a> methods are to <a
+href="Table.html#M000002">filter</a> and/or <a
+href="Table.html#M000003">sort</a> the table data before calling a <a
+href="Table.html#M000004">find_one</a> or <a
+href="Table.html#M000005">each_row</a>.
 </p>
 
     </div>
@@ -98,11 +98,12 @@ href="Table.html#M000004">each_row</a>.
       <h3 class="section-bar">Methods</h3>
 
       <div class="name-list">
-      <a href="#M000005">add_row</a>&nbsp;&nbsp;
-      <a href="#M000004">each_row</a>&nbsp;&nbsp;
-      <a href="#M000001">filter</a>&nbsp;&nbsp;
-      <a href="#M000003">find_one</a>&nbsp;&nbsp;
-      <a href="#M000002">sort</a>&nbsp;&nbsp;
+      <a href="#M000006">add_row</a>&nbsp;&nbsp;
+      <a href="#M000005">each_row</a>&nbsp;&nbsp;
+      <a href="#M000002">filter</a>&nbsp;&nbsp;
+      <a href="#M000004">find_one</a>&nbsp;&nbsp;
+      <a href="#M000001">page</a>&nbsp;&nbsp;
+      <a href="#M000003">sort</a>&nbsp;&nbsp;
       </div>
     </div>
 
@@ -163,6 +164,16 @@ href="Table.html#M000004">each_row</a>.
           <td class="context-item-desc"></td>
         </tr>
         <tr class="top-aligned-row context-row">
+          <td class="context-item-name">page</td>
+          <td class="context-item-value">&nbsp;[RW]&nbsp;</td>
+          <td class="context-item-desc"></td>
+        </tr>
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">page_size</td>
+          <td class="context-item-value">&nbsp;[RW]&nbsp;</td>
+          <td class="context-item-desc"></td>
+        </tr>
+        <tr class="top-aligned-row context-row">
           <td class="context-item-name">rating</td>
           <td class="context-item-value">&nbsp;[RW]&nbsp;</td>
           <td class="context-item-desc"></td>
@@ -192,29 +203,40 @@ href="Table.html#M000004">each_row</a>.
     <div id="methods">
       <h3 class="section-bar">Public Instance methods</h3>
 
+      <div id="method-M000006" class="method-detail">
+        <a name="M000006"></a>
+
+        <div class="method-heading">
+          <a href="Table.src/M000006.html" target="Code" class="method-signature"
+            onclick="popupCode('Table.src/M000006.html');return false;">
+          <span class="method-name">add_row</span><span class="method-args">(*params)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Samples:
+</p>
+<pre>
+  api.get_table('g9R1u2').add_row('NE') # add row with single subject
+  api.get_table('g9R1u2').add_row('NE', :state =&gt; 'Nebraska') # add single subject with fact values
+  api.get_table('EZ21ij').add_row(:last_name =&gt; 'Newguy') # if the table use UUID as their subject, the subject fields are not required
+</pre>
+<p>
+Returns:
+</p>
+<pre>
+  a Factual::Row object
+</pre>
+        </div>
+      </div>
+
       <div id="method-M000005" class="method-detail">
         <a name="M000005"></a>
 
         <div class="method-heading">
           <a href="Table.src/M000005.html" target="Code" class="method-signature"
             onclick="popupCode('Table.src/M000005.html');return false;">
-          <span class="method-name">add_row</span><span class="method-args">(values)</span>
-          </a>
-        </div>
-      
-        <div class="method-description">
-          <p>
-TODO
-</p>
-        </div>
-      </div>
-
-      <div id="method-M000004" class="method-detail">
-        <a name="M000004"></a>
-
-        <div class="method-heading">
-          <a href="Table.src/M000004.html" target="Code" class="method-signature"
-            onclick="popupCode('Table.src/M000004.html');return false;">
           <span class="method-name">each_row</span><span class="method-args">() {|row| ...}</span>
           </a>
         </div>
@@ -235,12 +257,12 @@ Samples:
         </div>
       </div>
 
-      <div id="method-M000001" class="method-detail">
-        <a name="M000001"></a>
+      <div id="method-M000002" class="method-detail">
+        <a name="M000002"></a>
 
         <div class="method-heading">
-          <a href="Table.src/M000001.html" target="Code" class="method-signature"
-            onclick="popupCode('Table.src/M000001.html');return false;">
+          <a href="Table.src/M000002.html" target="Code" class="method-signature"
+            onclick="popupCode('Table.src/M000002.html');return false;">
           <span class="method-name">filter</span><span class="method-args">(filters)</span>
           </a>
         </div>
@@ -248,17 +270,17 @@ Samples:
         <div class="method-description">
           <p>
 Define table filters, it can be chained before <tt><a
-href="Table.html#M000003">find_one</a></tt> or <tt><a
-href="Table.html#M000004">each_row</a></tt>.
+href="Table.html#M000004">find_one</a></tt> or <tt><a
+href="Table.html#M000005">each_row</a></tt>.
 </p>
 <p>
 The params can be:
 </p>
 <ul>
-<li>simple hash for equal <a href="Table.html#M000001">filter</a>
+<li>simple hash for equal <a href="Table.html#M000002">filter</a>
 
 </li>
-<li>nested hash with <a href="Table.html#M000001">filter</a> operators
+<li>nested hash with <a href="Table.html#M000002">filter</a> operators
 
 </li>
 </ul>
@@ -272,7 +294,7 @@ Samples:
   table.filter(:state =&gt; {&quot;$has&quot; =&gt; 'A'}, :city =&gt; {&quot;$ew&quot; =&gt; 'A'}).find_one # multi-key nested hashes
 </pre>
 <p>
-For more detail inforamtion about <a href="Table.html#M000001">filter</a>
+For more detail inforamtion about <a href="Table.html#M000002">filter</a>
 syntax, please look up at <a
 href="http://wiki.developer.factual.com/Filter">Server API Doc for
 Filter</a>
@@ -280,12 +302,12 @@ Filter</a>
         </div>
       </div>
 
-      <div id="method-M000003" class="method-detail">
-        <a name="M000003"></a>
+      <div id="method-M000004" class="method-detail">
+        <a name="M000004"></a>
 
         <div class="method-heading">
-          <a href="Table.src/M000003.html" target="Code" class="method-signature"
-            onclick="popupCode('Table.src/M000003.html');return false;">
+          <a href="Table.src/M000004.html" target="Code" class="method-signature"
+            onclick="popupCode('Table.src/M000004.html');return false;">
           <span class="method-name">find_one</span><span class="method-args">()</span>
           </a>
         </div>
@@ -300,24 +322,65 @@ Samples:
 </p>
 <ul>
 <li><tt>table.filter(:state =&gt; &#8216;CA&#8217;).<a
-href="Table.html#M000003">find_one</a></tt>
+href="Table.html#M000004">find_one</a></tt>
 
 </li>
 <li><tt>table.filter(:state =&gt; &#8216;CA&#8217;).<a
-href="Table.html#M000002">sort</a>(:city =&gt; 1).<a
-href="Table.html#M000003">find_one</a></tt>
+href="Table.html#M000003">sort</a>(:city =&gt; 1).<a
+href="Table.html#M000004">find_one</a></tt>
 
 </li>
 </ul>
         </div>
       </div>
 
-      <div id="method-M000002" class="method-detail">
-        <a name="M000002"></a>
+      <div id="method-M000001" class="method-detail">
+        <a name="M000001"></a>
 
         <div class="method-heading">
-          <a href="Table.src/M000002.html" target="Code" class="method-signature"
-            onclick="popupCode('Table.src/M000002.html');return false;">
+          <a href="Table.src/M000001.html" target="Code" class="method-signature"
+            onclick="popupCode('Table.src/M000001.html');return false;">
+          <span class="method-name">page</span><span class="method-args">(page_num, page_size_hash=nil)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Define the paging, it can be chained before <tt><a
+href="Table.html#M000004">find_one</a></tt> or <tt><a
+href="Table.html#M000005">each_row</a></tt>, <tt><a
+href="Table.html#M000005">each_row</a></tt> makes more sense though. The
+default <a href="Table.html#M000001">page</a> size is 20. And there is a <a
+href="http://wiki.developer.factual.com/ApiLimit">API limitation policy</a>
+need to be followed.
+</p>
+<p>
+The params are:
+</p>
+<ul>
+<li>page_num: the <a href="Table.html#M000001">page</a> number
+
+</li>
+<li>page_size_hash (optional): { :size =&gt; &lt;page_size&gt; }
+
+</li>
+</ul>
+<p>
+Samples:
+</p>
+<pre>
+  table.page(2).each_row { |row| ... } # for each row of the 2nd page
+  table.page(2, :size =&gt; 10).each_row { |row| ... } # for each row of the 2nd page, when page size is 10
+</pre>
+        </div>
+      </div>
+
+      <div id="method-M000003" class="method-detail">
+        <a name="M000003"></a>
+
+        <div class="method-heading">
+          <a href="Table.src/M000003.html" target="Code" class="method-signature"
+            onclick="popupCode('Table.src/M000003.html');return false;">
           <span class="method-name">sort</span><span class="method-args">(*sorts)</span>
           </a>
         </div>
@@ -325,8 +388,8 @@ href="Table.html#M000003">find_one</a></tt>
         <div class="method-description">
           <p>
 Define table sorts, it can be chained before <tt><a
-href="Table.html#M000003">find_one</a></tt> or <tt><a
-href="Table.html#M000004">each_row</a></tt>.
+href="Table.html#M000004">find_one</a></tt> or <tt><a
+href="Table.html#M000005">each_row</a></tt>.
 </p>
 <p>
 The params can be:
@@ -336,7 +399,7 @@ The params can be:
 
 </li>
 <li>single-key hashes, only the first 2 sorts will work. (secondary <a
-href="Table.html#M000002">sort</a> will be supported in next release of <a
+href="Table.html#M000003">sort</a> will be supported in next release of <a
 href="../Factual.html">Factual</a> API)
 
 </li>
@@ -349,7 +412,7 @@ Samples:
   table.sort({:state =&gt; 1}, {:abbr =&gt; -1}).find_one # single-key hashes
 </pre>
 <p>
-For more detail inforamtion about <a href="Table.html#M000002">sort</a>
+For more detail inforamtion about <a href="Table.html#M000003">sort</a>
 syntax, please look up at <a
 href="http://wiki.developer.factual.com/Sort">Server API Doc for Sort
 (TODO)</a>

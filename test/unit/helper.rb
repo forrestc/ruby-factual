@@ -1,9 +1,9 @@
 require 'test/unit'
 
 module Factual
-  class TestCase < Test::Unit::TestCase
+  class TestCase < Test::Unit::TestCase # :nodoc:
     # api_key for demo, read-only 
-    API_KEY     = 'Jo8cwSHeGQNIWoWRWt569vHS1JiAtiCIy4pbsr9THxmaxdj008fN7QH9rR5lsnMb'
+    API_KEY     = 'S8bAIJhnEnVp05BmMBNeI17Kz3waDgRYU4ykpKU2MVZAMydjiuy88yi1vhBxGsZC'
     API_VERSION = 2
     API_DOMAIN  = 'www.factual.com'
     DEBUG_MODE  = false
